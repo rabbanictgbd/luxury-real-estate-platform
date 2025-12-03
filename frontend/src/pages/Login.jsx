@@ -24,8 +24,8 @@ export default function Login() {
 
   return (
     <div className="max-w-md mx-auto bg-base-100 shadow-lg p-6 rounded-lg">
-      <h2 className="text-2xl font-bold text-center mb-4 text-red-600">
-        Login 🩸
+      <h2 className="text-2xl font-bold text-center mb-4 text-primary">
+        Login
       </h2>
 
       <form onSubmit={handleLogin} className="space-y-4">
@@ -34,14 +34,14 @@ export default function Login() {
         
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        <button type="submit" className="btn btn-error w-full text-white">
+        <button type="submit" className="btn btn-primary w-full text-white">
           Login
         </button>
       </form>
 
       <p className="text-center mt-4">
         Don’t have an account?{" "}
-        <Link to="/register" className="text-red-500 font-semibold">
+        <Link to="/register" className="text-primary font-semibold">
           Register
         </Link>
       </p>

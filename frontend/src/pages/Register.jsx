@@ -91,8 +91,8 @@ export default function Register() {
 
   return (
     <div className="max-w-lg mx-auto bg-base-100 shadow-lg p-6 rounded-lg">
-      <h2 className="text-2xl font-bold text-center mb-4 text-red-600">
-        Register as Donor 🩸
+      <h2 className="text-2xl font-bold text-center mb-4 text-primary">
+        Register
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -124,12 +124,12 @@ export default function Register() {
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
 
-        <button type="submit" disabled={!!emailError} className="btn btn-error w-full text-white">Register</button>
+        <button type="submit" disabled={!!emailError} className="btn btn-primary w-full text-white">Register</button>
       </form>
 
       <p className="text-center mt-4">
         Already have an account?{" "}
-        <Link to="/login" className="text-red-500 font-semibold">Login</Link>
+        <Link to="/login" className="text-primary font-semibold">Login</Link>
       </p>
     </div>
   );

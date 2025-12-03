@@ -6,7 +6,7 @@ import Dashboard from '../pages/Dashboard'
 import Profile from '../pages/Profile'
 import { Routes, Route } from 'react-router-dom'
 import MainLayout from '../layouts/MainLayout'
-import DashboardLayout from '../layouts/DashboardLayout'
+// import DashboardLayout from '../layouts/DashboardLayout'
 import PrivateRoutes from './PrivateRoutes'
 import MyDonationRequests from '../pages/MyDonationRequests'
 import CreateRequest from '../pages/CreateRequest'
@@ -35,7 +35,7 @@ const Router = () => {
                     <Route path="/register" element={<Register />} />
                     <Route path="/search" element={<DonorSearch />} />
                 </Route>
-                <Route element={<PrivateRoutes/>}>
+                {/* <Route element={<PrivateRoutes/>}>
                     <Route element={<DashboardLayout />}>
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/dashboard/profile" element={<Profile />} />
@@ -46,7 +46,7 @@ const Router = () => {
                         <Route path="/dashboard/content-management" element={<ContentManagement />} />
                         <Route path="/dashboard/content-management/add-blog" element={<AddBlog />} />
                     </Route>
-                </Route>
+                </Route> */}
             </Routes>
         </div>
     )

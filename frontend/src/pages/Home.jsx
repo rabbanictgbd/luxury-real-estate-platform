@@ -13,21 +13,21 @@ export default function Home() {
       <div className="hero min-h-[70vh] bg-base-200">
         <div className="hero-content text-center">
           <div className="max-w-xl">
-            <h1 className="text-4xl font-bold text-red-600">
-              Welcome to Blood Donation App 🩸
+            <h1 className="text-4xl font-bold text-primary">
+              Welcome to Luxury Real State Platform
             </h1>
             <p className="py-6 text-gray-600">
-              Your contribution can save lives. Join as a donor or search for donors near you.
+              
             </p>
             <div className="flex gap-4 justify-center">
               {
                 !user?.email &&
-              <Link to="/register" className="btn btn-error text-white">
-                Join as Donor
+              <Link to="/register" className="btn btn-primary text-white">
+                Join 
               </Link>
               }
-              <Link to="/search" className="btn btn-outline btn-error">
-                Search Donors
+              <Link to="/search" className="btn btn-outline btn-primary">
+                Search Property
               </Link>
             </div>
           </div>
