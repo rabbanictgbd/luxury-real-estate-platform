@@ -80,9 +80,7 @@ export default function Register() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Registration failed");
 
-      // Firebase user creation
-      await register(email, password);
-      Swal.fire("Success", "Registration successful! You can now login.", "success");
+
       navigate("/login");
     } catch (err) {
       Swal.fire("Error", err.message, "error");

@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import Features from "../components/Features";
 import ContactUs from "../components/ContactUs";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthProvider";
@@ -34,10 +33,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Placeholder Sections */}
-      <section className="py-10  text-center">
-        <Features></Features>
-      </section>
+
 
       <section className="py-10  text-center bg-base-100">
         <ContactUs></ContactUs>
