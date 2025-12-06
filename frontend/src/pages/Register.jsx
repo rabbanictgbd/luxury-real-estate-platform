@@ -73,7 +73,7 @@ export default function Register() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name, email, password, bloodGroup,
-          district: location.district, upazila: location.upazila,
+          // district: location.district, upazila: location.upazila,
           image: imageUrl, status, role
         }),
       });
@@ -116,7 +116,7 @@ export default function Register() {
           {bloodGroups.map((bg) => <option key={bg} value={bg}>{bg}</option>)}
         </select>
 
-        <DistrictUpazilaSelector defaultDistrict="" defaultUpazila="" onChange={handleLocationChange} />
+        {/* <DistrictUpazilaSelector defaultDistrict="" defaultUpazila="" onChange={handleLocationChange} /> */}
 
         <input name="image" type="file" className="file-input file-input-bordered w-full" accept="image/*" required />
 
