@@ -29,7 +29,7 @@ export default function AuthProvider({ children }) {
   const register = async (name, email, password, photoURL = "") => {
     setLoading(true);
 
-    const res = await fetch(`${serverApi}/api/register`, {
+    const res = await fetch(`${serverApi}/api/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password, photoURL }),
@@ -54,7 +54,7 @@ export default function AuthProvider({ children }) {
   const login = async (email, password) => {
     setLoading(true);
 
-    const res = await fetch(`${serverApi}/api/login`, {
+    const res = await fetch(`${serverApi}/api/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
