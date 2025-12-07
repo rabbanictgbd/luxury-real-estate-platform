@@ -41,7 +41,7 @@ const ContactUs = () => {
   return (
     <section id="contact" className="py-16 bg-gray-50">
       <div className="max-w-6xl mx-auto px-6">
-        <h2 className="text-3xl font-bold text-center text-red-600 mb-10">
+        <h2 className="text-3xl font-bold text-center text-primary mb-10">
           📞 Contact Us
         </h2>
 
@@ -52,7 +52,7 @@ const ContactUs = () => {
               Have questions or need assistance? Reach out to us through this form
               or via the details below.
             </p>
-            <p><strong>📍 Address:</strong> Chattogram, Bangladesh</p>
+            <p><strong>📍 Address:</strong> Dhaka, Bangladesh</p>
             <p><strong>📧 Email:</strong> support@bloodapp.com</p>
             <p><strong>📞 Phone:</strong> +880 1234-567890</p>
           </div>
@@ -92,7 +92,7 @@ const ContactUs = () => {
             <button
               type="submit"
               disabled={loading}
-              className="btn btn-error text-white w-full"
+              className="btn btn-primary text-white w-full"
             >
               {loading ? "Sending..." : "Send Message"}
             </button>

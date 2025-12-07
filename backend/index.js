@@ -68,33 +68,45 @@ function getCollection(name) {
 //      UNIVERSAL CRUD ROUTES
 // ======================================================
 
-app.post("api/login", async (req, res) => {
-  const { email, password } = req.body;
-
+app.get("/api/users/:email", async (req, res) => {
   try {
-    const user = await db.collection("users").findOne({ email });
+    const email = req.params.email;
+    const user = await usersCollection.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ exists: false });
     }
 
-    if (user.password !== password) {
-      return res.status(400).json({ error: "Wrong password" });
-    }
-
-    // Success
-    return res.json({
-      message: "Login successful",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
-    });
+    res.json({ exists: true, user });
   } catch (err) {
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: err.message });
   }
 });
+
+
+app.post("/api/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await db.collection("users").findOne({ email });
+
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  if (user.password !== password) {
+    return res.status(401).json({ error: "Wrong password" });
+  }
+
+  // Remove password before sending
+  const userData = {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    image: user.image,
+  };
+
+  res.json({ user: userData });
+});
+
 
 
 // CREATE (POST)

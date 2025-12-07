@@ -9,31 +9,25 @@ export default function Navbar() {
   const navConfig = {
     guest: [
       { path: "/", label: "Home" },
-     
 
-      { path: "/all-donation-requests", label: "All Requests" },
+
+
       { path: "/login", label: "Login" },
+      { path: "/", label: "Home" },
+      { path: "/properties", label: "Property Search" },
+      { path: "/my-bookings", label: "My Bookings" },
+
     ],
     donor: [
       { path: "/", label: "Home" },
-      { path: "/blogs", label: "Blogs" },
-      { path: "/requests", label: "Blood Request" },
-      { path: "/all-donation-requests", label: "All Requests" },
-      { path: "/dashboard", label: "Donor Dashboard" },
-    ],
-    volunteer: [
-      { path: "/", label: "Home" },
-      { path: "/blogs", label: "Blogs" },
-      { path: "/requests", label: "Blood Request" },
-      { path: "/all-donation-requests", label: "All Requests" },
-      { path: "/dashboard", label: "Volunteer Dashboard" },
+      { path: "/properties", label: "Property Search" },
+      { path: "/my-bookings", label: "My Bookings" },
     ],
     admin: [
       { path: "/", label: "Home" },
-      { path: "/blogs", label: "Blogs" },
-      { path: "/requests", label: "Blood Request" },
-      { path: "/all-donation-requests", label: "All Requests" },
-      { path: "/dashboard", label: "Admin Dashboard" },
+      { path: "/properties", label: "Property Search" },
+      { path: "/property-entry", label: "Property Entry" },
+      { path: "/my-bookings", label: "My Bookings" },
     ],
   };
 
@@ -56,7 +50,7 @@ export default function Navbar() {
       {/* Desktop Dropdown Menu */}
       <div className="flex-none hidden lg:flex items-center gap-3">
         <div className="dropdown dropdown-hover">
-          
+
           <ul className="flex">
             {navItems.map((item) => (
               <li key={item.path}>
@@ -82,7 +76,7 @@ export default function Navbar() {
             <label tabIndex={0}>
               <img
                 className="w-10 h-10 rounded-full cursor-pointer"
-                src={profile?.image}
+                src={user?.image}
                 alt="NoImg"
               />
             </label>

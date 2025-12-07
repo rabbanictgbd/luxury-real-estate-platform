@@ -2,12 +2,12 @@ import { FaFacebook, FaTwitter, FaGithub } from "react-icons/fa";
 
 const Footer = () => {
   return (
-    <footer className="bg-red-900 text-white py-6 mt-10">
+    <footer className="bg-primary text-white py-6 mt-10">
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between">
         
         {/* Logo / Brand */}
         <div className="text-lg font-bold mb-4 md:mb-0 text-red-200">
-          Blood Donation App
+          Luxury Real State Platform
         </div>
 
         {/* Navigation Links */}
@@ -32,7 +32,7 @@ const Footer = () => {
       </div>
 
       <p className="text-center text-red-200 text-sm mt-4">
-        © {new Date().getFullYear()} Blood Donation App. All rights reserved.
+        © {new Date().getFullYear()} Luxury Real State Platform. All rights reserved.
       </p>
     </footer>
   );

@@ -2,7 +2,6 @@ import { useState, useContext, useCallback } from "react";
 import { AuthContext } from "../context/AuthProvider";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import DistrictUpazilaSelector from "../components/DistrictUpazilaSelector";
 
 export default function Register() {
   const { register, serverApi } = useContext(AuthContext);
@@ -24,17 +23,29 @@ export default function Register() {
 
   }
   
-  const handleEmailBlur = async () => {
-    if (!email) return;
-    try {
-      const res = await fetch(`${serverApi}/api/users/${email}`);
-      const data = await res.json();
-      setEmailError(data ? "Email already registered!" : "");
-    } catch (err) {
-      console.error(err);
+ const handleEmailBlur = async () => {
+  if (!email) return;
+
+  try {
+    const res = await fetch(`${serverApi}/api/users/${email}`);
+
+    if (res.status === 404) {
+      setEmailError("");   // email is available
+      return;
     }
-    
-  };
+
+    const data = await res.json();
+    if (data.exists) {
+      setEmailError("Email already registered!");
+    } else {
+      setEmailError("");
+    }
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();

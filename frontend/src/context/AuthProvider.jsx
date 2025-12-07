@@ -11,17 +11,18 @@ export default function AuthProvider({ children }) {
   const serverApi = "http://localhost:5000";
 
   // ✅ Fetch user profile from DB
-  const { data: profile } = useQuery({
-    queryKey: ["user", user?.email],
-    queryFn: async () => {
-      const res = await fetch(`${serverApi}/api/users/${user?.email}`);
-      if (!res.ok) throw new Error("Failed to fetch user profile");
-      return res.json();
-    },
-    enabled: !!user?.email,
-  });
+  // const { data: profile } = useQuery({
+  //   queryKey: ["user", user?.email],
+  //   queryFn: async () => {
+  //     const res = await fetch(`${serverApi}/api/users/${user?.email}`);
+  //     if (!res.ok) throw new Error("Failed to fetch user profile");
+  //     return res.json();
+  //   },
+  //   enabled: !!user?.email,
+  // });
 
-  const role = profile?.role;
+  const role = user?.role;
+  console.log(user?.email)
 
   // --------------------------------------------------------------------
   // ✅ REGISTER (via MongoDB backend)
@@ -51,26 +52,27 @@ export default function AuthProvider({ children }) {
   // --------------------------------------------------------------------
   // ✅ LOGIN (via MongoDB backend)
   // --------------------------------------------------------------------
-  const login = async (email, password) => {
-    setLoading(true);
+ const login = async (email, password) => {
+  setLoading(true);
 
-    const res = await fetch(`${serverApi}/api/users`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+  const res = await fetch(`${serverApi}/api/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    if (!res.ok) {
-      setLoading(false);
-      throw new Error(data.error || "Login failed");
-    }
-
-    setUser(data.user); // store logged-in user
+  if (!res.ok) {
     setLoading(false);
-    return data.user;
-  };
+    throw new Error(data.error || "Login failed");
+  }
+
+  setUser(data.user);
+  setLoading(false);
+  return data.user;
+};
+
 
   // --------------------------------------------------------------------
   // ✅ LOGOUT — remove saved user
@@ -100,7 +102,6 @@ export default function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
-      profile,
       user,
       role,
       loading,

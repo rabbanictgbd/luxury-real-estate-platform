@@ -2,7 +2,6 @@ import { useState, useContext, useCallback } from "react";
 import { AuthContext } from "../context/AuthProvider";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Swal from "sweetalert2";
-import DistrictUpazilaSelector from "../components/DistrictUpazilaSelector";
 
 export default function Profile() {
   const { user, serverApi } = useContext(AuthContext);
@@ -13,7 +12,7 @@ export default function Profile() {
   const [preview, setPreview] = useState(null); // ✅ preview for uploaded image
   const [file, setFile] = useState(null); // ✅ selected file
 
-  const handleLocationChange = useCallback((loc) => setLocation(loc), []);
+
 
   // ✅ Fetch current user from backend
   const { data: profile, isLoading } = useQuery({
@@ -167,12 +166,6 @@ export default function Profile() {
           ))}
         </select>
 
-        <DistrictUpazilaSelector
-          defaultDistrict={profile.district}
-          defaultUpazila={profile.upazila}
-          onChange={handleLocationChange}
-          disabled={!isEditing}
-        />
 
         {isEditing && (
           <button type="submit" className="btn btn-success w-full">
