@@ -1,21 +1,16 @@
 import { createContext, useEffect, useState } from "react";
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged,
-  updateProfile
-} from "firebase/auth";
-import { auth } from "../firebase.config";
 import { useQuery } from "@tanstack/react-query";
 
 export const AuthContext = createContext();
 
 export default function AuthProvider({ children }) {
-  const [user, setUser] = useState(true);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Fetch donor profile
+  // API Base URL
+  const serverApi = "http://localhost:5000";
+
+  // ✅ Fetch user profile from DB
   const { data: profile } = useQuery({
     queryKey: ["user", user?.email],
     queryFn: async () => {
@@ -26,50 +21,94 @@ export default function AuthProvider({ children }) {
     enabled: !!user?.email,
   });
 
-  const role=profile?.role
+  const role = profile?.role;
 
-  // Register user with profile update
-  const register = async (email, password, name, photoURL) => {
+  // --------------------------------------------------------------------
+  // ✅ REGISTER (via MongoDB backend)
+  // --------------------------------------------------------------------
+  const register = async (name, email, password, photoURL = "") => {
     setLoading(true);
-    const result = await createUserWithEmailAndPassword(auth, email, password);
-    if (name || photoURL) {
-      await updateProfile(result.user, {
-        displayName: name,
-        photoURL: photoURL || ""
-      });
-    }
-    return result;
-  };
 
-  // Login user
-  const login = (email, password) => {
-    setLoading(true);
-    return signInWithEmailAndPassword(auth, email, password);
-  };
-
-  // Logout user
-  const logout = () => {
-    setLoading(true);
-    return signOut(auth);
-  };
-
-  // Track auth state
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
+    const res = await fetch(`${serverApi}/api/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password, photoURL }),
     });
-    return () => unsubscribe();
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setLoading(false);
+      throw new Error(data.error || "Registration failed");
+    }
+
+    setUser(data.user); // store logged-in user
+
+    setLoading(false);
+    return data.user;
+  };
+
+  // --------------------------------------------------------------------
+  // ✅ LOGIN (via MongoDB backend)
+  // --------------------------------------------------------------------
+  const login = async (email, password) => {
+    setLoading(true);
+
+    const res = await fetch(`${serverApi}/api/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setLoading(false);
+      throw new Error(data.error || "Login failed");
+    }
+
+    setUser(data.user); // store logged-in user
+    setLoading(false);
+    return data.user;
+  };
+
+  // --------------------------------------------------------------------
+  // ✅ LOGOUT — remove saved user
+  // --------------------------------------------------------------------
+  const logout = () => {
+    setUser(null);
+    localStorage.removeItem("user");
+  };
+
+  // --------------------------------------------------------------------
+  // ✅ Load user from localStorage when page refreshes
+  // --------------------------------------------------------------------
+  useEffect(() => {
+    const saved = localStorage.getItem("user");
+    if (saved) {
+      setUser(JSON.parse(saved));
+    }
+    setLoading(false);
   }, []);
 
-  //Server api
-  const localServer= "http://localhost:5000"
-  const vercelServer= "https://b11a12-server-side-rabbanictgbd.vercel.app"
-  const serverApi= localServer
-  // const serverApi= vercelServer
+  // Save user when changes
+  useEffect(() => {
+    if (user) localStorage.setItem("user", JSON.stringify(user));
+  }, [user]);
+
+  // --------------------------------------------------------------------
 
   return (
-    <AuthContext.Provider value={{ profile, user, role, loading, register, login, logout, serverApi }}>
+    <AuthContext.Provider value={{
+      profile,
+      user,
+      role,
+      loading,
+      register,
+      login,
+      logout,
+      serverApi
+    }}>
       {children}
     </AuthContext.Provider>
   );

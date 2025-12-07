@@ -78,6 +78,7 @@ export default function Register() {
         }),
       });
       const data = await res.json();
+      Swal.fire("Registered Successfully")
       if (!res.ok) throw new Error(data.message || "Registration failed");
 
 
