@@ -123,12 +123,10 @@ export default function PropertySearch() {
                   <p className="font-semibold">BDT {p.price}</p>
 
                   <div className="card-actions justify-end">
-                    <a
-                      href={`/properties/${p.slug}`}
-                      className="btn btn-sm btn-outline"
-                    >
+                    <a href={`/properties/${p._id}`} className="btn btn-sm btn-outline">
                       View Details
                     </a>
+
                   </div>
                 </div>
               </div>

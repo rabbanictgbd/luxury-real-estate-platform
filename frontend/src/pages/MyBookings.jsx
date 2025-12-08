@@ -1,93 +1,75 @@
-// src/pages/MyBookings.jsx
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthProvider";
-import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
 
 export default function MyBookings() {
-  const { serverApi, user } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
-      Swal.fire("Login required", "You must login to view your bookings", "info");
-      navigate("/login");
-      return;
+    if (user?.email) {
+      fetchBookings();
     }
+  }, [user]);
 
-    const fetchBookings = async () => {
-      try {
-        const res = await fetch(`${serverApi}/api/bookings/user/${user.email}`);
-        if (!res.ok) throw new Error("Failed to fetch bookings");
-        const data = await res.json();
-        setBookings(data);
-      } catch (err) {
-        Swal.fire("Error", err.message, "error");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBookings();
-  }, [user, serverApi, navigate]);
-
-  const handleCancel = async (bookingId) => {
-    const confirm = await Swal.fire({
-      title: "Cancel Booking?",
-      text: "Are you sure you want to cancel this booking?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonText: "Yes, cancel it",
-    });
-
-    if (!confirm.isConfirmed) return;
-
+  const fetchBookings = async () => {
     try {
-      const res = await fetch(`${serverApi}/api/bookings/${bookingId}`, {
-        method: "DELETE",
-      });
+      setLoading(true);
+      const res = await fetch(
+        `http://localhost:5000/api/bookings?userEmail=${encodeURIComponent(
+          user.email
+        )}`
+      );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to cancel booking");
-
-      Swal.fire("Cancelled!", "Booking has been cancelled", "success");
-      setBookings(bookings.filter((b) => b._id !== bookingId));
+      setBookings(Array.isArray(data) ? data : []);
+      setLoading(false);
     } catch (err) {
-      Swal.fire("Error", err.message, "error");
+      console.error("Failed to fetch bookings:", err);
+      setBookings([]);
+      setLoading(false);
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
-
-  if (!bookings.length)
-    return <p className="text-center mt-10">No bookings found.</p>;
-
   return (
-    <div className="max-w-4xl mx-auto mt-6 p-6 bg-base-100 shadow-lg rounded-lg">
+    <div className="p-10 max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold mb-6 text-center">My Bookings</h1>
-      <div className="space-y-4">
-        {bookings.map((booking) => (
-          <div
-            key={booking._id}
-            className="p-4 bg-gray-100 rounded-lg flex justify-between items-center"
-          >
-            <div>
-              <h2 className="text-xl font-semibold">{booking.propertyTitle}</h2>
-              <p className="text-gray-600">
-                Date: {new Date(booking.bookingDate).toLocaleDateString()}
-              </p>
-              <p className="text-gray-600">Price: ${booking.propertyPrice}</p>
+
+      {loading ? (
+        <p className="text-center text-gray-500">Loading bookings...</p>
+      ) : bookings.length === 0 ? (
+        <p className="text-center text-gray-500">No bookings found.</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {bookings.map((booking) => (
+            <div key={booking._id} className="card bg-base-100 shadow-xl">
+              <figure>
+                <img
+                  src={booking.propertyImage}
+                  alt={booking.propertyTitle}
+                  className="h-48 w-full object-cover"
+                />
+              </figure>
+
+              <div className="card-body">
+                <h2 className="card-title">{booking.propertyTitle}</h2>
+                <p className="font-semibold">Price: BDT {booking.price}</p>
+                <p className="text-gray-600">
+                  Booked On: {new Date(booking.bookedAt).toLocaleDateString()}
+                </p>
+
+                <div className="card-actions justify-end">
+                  <a
+                    href={`/properties/${booking.propertyId}`}
+                    className="btn btn-sm btn-outline"
+                  >
+                    View Property
+                  </a>
+                </div>
+              </div>
             </div>
-            <button
-              onClick={() => handleCancel(booking._id)}
-              className="btn btn-error text-white"
-            >
-              Cancel
-            </button>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

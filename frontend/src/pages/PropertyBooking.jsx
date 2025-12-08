@@ -1,93 +1,119 @@
-// src/pages/PropertyBooking.jsx
 import { useEffect, useState, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthProvider";
 import Swal from "sweetalert2";
 
 export default function PropertyBooking() {
-  const { serverApi, user } = useContext(AuthContext);
-  const { id } = useParams(); // property ID from URL
+  const { id } = useParams(); // property _id
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
   const [property, setProperty] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [bookingDate, setBookingDate] = useState("");
 
+  // Fetch property details
   useEffect(() => {
     const fetchProperty = async () => {
       try {
-        const res = await fetch(`${serverApi}/api/properties/${id}`);
-        if (!res.ok) throw new Error("Property not found");
+        const res = await fetch(`http://localhost:5000/api/properties/${id}`);
         const data = await res.json();
         setProperty(data);
+        setLoading(false);
       } catch (err) {
-        Swal.fire("Error", err.message, "error");
-        navigate("/properties");
-      } finally {
+        console.error("Failed to fetch property:", err);
         setLoading(false);
       }
     };
+
     fetchProperty();
-  }, [id, serverApi, navigate]);
+  }, [id]);
 
-  const handleBooking = async (e) => {
-    e.preventDefault();
-
+  const handleBooking = async () => {
     if (!user) {
-      Swal.fire("Error", "You must be logged in to book a property", "error");
+      Swal.fire("Error", "Please login to book a property", "error");
       return;
     }
 
-    try {
-      const res = await fetch(`${serverApi}/api/bookings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          propertyId: property._id,
-          userEmail: user.email,
-          bookingDate,
-        }),
-      });
+    const confirm = await Swal.fire({
+      title: "Confirm Booking",
+      text: `Do you want to book "${property.title}"?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Book Now",
+    });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Booking failed");
+    if (confirm.isConfirmed) {
+      const bookingData = {
+        userEmail: user.email,
+        propertyId: property._id,
+        propertyTitle: property.title,
+        propertyImage: property.image,
+        price: property.price,
+        bookedAt: new Date(),
+      };
 
-      Swal.fire("Success", "Property booked successfully", "success");
-      navigate("/my-bookings");
-    } catch (err) {
-      Swal.fire("Error", err.message, "error");
+      try {
+        const res = await fetch("http://localhost:5000/api/bookings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(bookingData),
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+          Swal.fire(
+            "Booked!",
+            "Your property has been booked successfully.",
+            "success"
+          );
+          navigate("/my-bookings");
+        } else {
+          Swal.fire("Error", "Failed to book property", "error");
+        }
+      } catch (err) {
+        console.error("Booking error:", err);
+        Swal.fire("Error", "Server error. Try again later.", "error");
+      }
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
-  if (!property) return null;
+  if (loading) {
+    return <p className="text-center mt-10">Loading property details...</p>;
+  }
+
+  if (!property) {
+    return <p className="text-center mt-10">Property not found.</p>;
+  }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-base-100 shadow-lg rounded-lg mt-6">
-      <h1 className="text-3xl font-bold mb-4">Book: {property.title}</h1>
-      <p className="text-gray-600 mb-2">Category: {property.category}</p>
-      <p className="text-xl font-semibold mb-2">Price: ${property.price}</p>
-      <p className="mb-4">{property.description}</p>
+    <div className="p-10 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">{property.title}</h1>
 
-      <form onSubmit={handleBooking} className="space-y-4">
-        <label className="block">
-          Booking Date:
-          <input
-            type="date"
-            value={bookingDate}
-            onChange={(e) => setBookingDate(e.target.value)}
-            className="input input-bordered w-full mt-1"
-            required
+      <div className="card bg-base-100 shadow-xl">
+        <figure>
+          <img
+            src={property.image}
+            alt={property.title}
+            className="h-64 w-full object-cover"
           />
-        </label>
+        </figure>
 
-        <button
-          type="submit"
-          className="btn btn-primary w-full text-white"
-        >
-          Confirm Booking
-        </button>
-      </form>
+        <div className="card-body">
+          <p className="font-semibold">Price: BDT {property.price}</p>
+          <p className="text-gray-600">Location: {property.location}</p>
+          <p>Size: {property.size} sqft</p>
+          <p>Bedrooms: {property.bedrooms}</p>
+          <p>Bathrooms: {property.bathrooms}</p>
+          <p className="mt-3">{property.description}</p>
+
+          <div className="card-actions justify-end mt-4">
+            <button className="btn btn-primary" onClick={handleBooking}>
+              Book Now
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -8,14 +8,11 @@ export default function Navbar() {
 
   const navConfig = {
     guest: [
-      { path: "/", label: "Home" },
-
-
-
-      { path: "/login", label: "Login" },
+     
       { path: "/", label: "Home" },
       { path: "/properties", label: "Property Search" },
       { path: "/my-bookings", label: "My Bookings" },
+      { path: "/login", label: "Login" },
 
     ],
     donor: [
@@ -25,8 +22,8 @@ export default function Navbar() {
     ],
     admin: [
       { path: "/", label: "Home" },
-      { path: "/properties", label: "Property Search" },
       { path: "/property-entry", label: "Property Entry" },
+      { path: "/properties", label: "Property Search" },
       { path: "/my-bookings", label: "My Bookings" },
     ],
   };
