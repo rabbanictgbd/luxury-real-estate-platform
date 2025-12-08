@@ -11,7 +11,7 @@ export default function PropertySearch() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Fetch all properties by default
+  // Fetch all properties initially
   useEffect(() => {
     fetchProperties();
   }, []);
@@ -19,7 +19,6 @@ export default function PropertySearch() {
   const fetchProperties = async (queryParams = "") => {
     try {
       setLoading(true);
-
       const url = queryParams
         ? `http://localhost:5000/api/properties/search?${queryParams}`
         : "http://localhost:5000/api/properties";
@@ -35,16 +34,15 @@ export default function PropertySearch() {
     }
   };
 
-  // 🔹 Handle input change
+  // Handle form input change
   const handleChange = (e) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
-  // 🔹 Handle search submit
+  // Handle search submit
   const handleSearch = (e) => {
     e.preventDefault();
 
-    // Remove empty filters to avoid sending empty query params
     const query = Object.entries(filters)
       .filter(([key, value]) => value.trim() !== "")
       .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)

@@ -175,27 +175,38 @@ app.delete("/api/:collection/:id", async (req, res) => {
 });
 
 
+// SEARCH PROPERTIES
 app.get("/api/properties/search", async (req, res) => {
   try {
     const { title, location, category, maxPrice } = req.query;
 
     let filter = {};
 
+    // ---- TITLE SEARCH (MULTI-WORD, FLEXIBLE) ----
     if (title && title.trim() !== "") {
-      filter.title = { $regex: title, $options: "i" };
+      const words = title.trim().split(" ").filter(Boolean);
+
+      filter.$or = words.map((word) => ({
+        title: { $regex: word, $options: "i" },
+      }));
     }
 
+    // ---- LOCATION SEARCH ----
     if (location && location.trim() !== "") {
-      filter.location = { $regex: location, $options: "i" };
+      filter.location = { $regex: new RegExp(location.trim(), "i") };
     }
 
+    // ---- CATEGORY SEARCH ----
     if (category && category.trim() !== "") {
-      filter.category = category;
+      filter.category = category.trim();
     }
 
+    // ---- PRICE FILTER ----
     if (maxPrice && !isNaN(maxPrice)) {
       filter.price = { $lte: Number(maxPrice) };
     }
+
+    console.log("FINAL FILTER:", JSON.stringify(filter, null, 2));
 
     const properties = await propertiesCollection.find(filter).toArray();
 
@@ -205,6 +216,8 @@ app.get("/api/properties/search", async (req, res) => {
     res.status(500).json({ message: "Server error", error: err });
   }
 });
+
+
 
 
 
