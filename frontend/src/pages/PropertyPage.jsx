@@ -1,143 +1,118 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 
-export default function PropertyPage() {
-  const serverApi = "http://localhost:5000";
+export default function PropertySearch() {
+  const [filters, setFilters] = useState({
+    title: "",
+    location: "",
+    category: "",
+    maxPrice: "",
+  });
+
   const [properties, setProperties] = useState([]);
-  const [filtered, setFiltered] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  // Filters
-  const [search, setSearch] = useState("");
-  const [city, setCity] = useState("");
-  const [category, setCategory] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-
-  // Fetch properties
+  // 🚀 Load all properties by default
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await fetch(`${serverApi}/api/properties`);
-        const data = await res.json();
-        setProperties(data);
-        setFiltered(data);
-      } catch (err) {
-        console.error("Fetch error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+    fetch("http://localhost:5000/api/properties")
+      .then((res) => res.json())
+      .then((data) => setProperties(data));
   }, []);
 
-  // Apply filters
-  useEffect(() => {
-    let items = [...properties];
+  // Handle filter change
+  const handleChange = (e) => {
+    setFilters({ ...filters, [e.target.name]: e.target.value });
+  };
 
-    if (search) {
-      items = items.filter((p) =>
-        p.title.toLowerCase().includes(search.toLowerCase())
-      );
-    }
+  // Handle search
+  const handleSearch = async (e) => {
+    e.preventDefault();
 
-    if (city) {
-      items = items.filter((p) => p.city === city);
-    }
+    const query = new URLSearchParams(filters).toString();
 
-    if (category) {
-      items = items.filter((p) => p.category === category);
-    }
-
-    if (maxPrice) {
-      items = items.filter((p) => p.price <= maxPrice);
-    }
-
-    setFiltered(items);
-  }, [search, city, category, maxPrice, properties]);
-
-  if (loading) return <p className="text-center text-lg mt-10">Loading properties...</p>;
+    const res = await fetch(
+      `http://localhost:5000/api/properties/search?${query}`
+    );
+    const data = await res.json();
+    setProperties(data);
+  };
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="p-10 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6 text-center">Search Properties</h1>
 
-      {/* Page Title */}
-      <h1 className="text-3xl font-bold text-center mb-6">Luxury Properties</h1>
-
-      {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        
-        <input 
-          type="text" 
-          placeholder="Search property..." 
-          className="input input-bordered w-full"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+      {/* Search Form */}
+      <form
+        onSubmit={handleSearch}
+        className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-6 rounded-xl shadow-lg"
+      >
+        <input
+          type="text"
+          name="title"
+          placeholder="Property Name"
+          className="input input-bordered"
+          onChange={handleChange}
         />
 
-        <input 
-          type="text" 
-          placeholder="City (e.g. Dhaka)" 
-          className="input input-bordered w-full"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
+        <input
+          type="text"
+          name="location"
+          placeholder="Location"
+          className="input input-bordered"
+          onChange={handleChange}
         />
 
-        <select 
-          className="select select-bordered w-full"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
+        <select
+          name="category"
+          className="select select-bordered"
+          onChange={handleChange}
         >
-          <option value="">Select Category</option>
-          <option value="apartment">Apartment</option>
-          <option value="villa">Villa</option>
-          <option value="duplex">Duplex</option>
-          <option value="commercial">Commercial</option>
+          <option value="">Category</option>
+          <option value="Luxury Villa">Luxury Villa</option>
+          <option value="Apartment">Apartment</option>
+          <option value="Commercial">Commercial</option>
+          <option value="Penthouse">Penthouse</option>
         </select>
 
-        <input 
-          type="number" 
-          placeholder="Max Price" 
-          className="input input-bordered w-full"
-          value={maxPrice}
-          onChange={(e) => setMaxPrice(e.target.value)}
+        <input
+          type="number"
+          name="maxPrice"
+          placeholder="Max Price"
+          className="input input-bordered"
+          onChange={handleChange}
         />
-      </div>
 
-      {/* Property Grid */}
-      {filtered.length === 0 ? (
-        <p className="text-center text-lg text-gray-500">No properties found</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {filtered.map((p) => (
-            <div key={p._id} className="card bg-base-100 shadow-xl rounded-lg overflow-hidden">
-              
-              <figure>
-                <img 
-                  src={p.image || "https://placehold.co/600x400"} 
-                  alt={p.title}
-                  className="h-48 w-full object-cover"
-                />
-              </figure>
+        <button className="btn btn-primary col-span-full">Search</button>
+      </form>
 
-              <div className="card-body">
-                <h2 className="card-title">{p.title}</h2>
-                <p className="text-gray-600">{p.city}</p>
+      {/* Property Cards Section */}
+      <h2 className="text-2xl font-semibold mt-10 mb-4">
+        {properties.length} Properties Found
+      </h2>
 
-                <p className="font-bold text-primary">${p.price.toLocaleString()}</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {properties.map((p) => (
+          <div key={p._id} className="card bg-base-100 shadow-xl">
+            <figure>
+              <img
+                src={p.image}
+                alt={p.title}
+                className="h-48 w-full object-cover"
+              />
+            </figure>
 
-                <div className="card-actions justify-end mt-2">
-                  <Link to={`/properties/${p._id}`} className="btn btn-primary text-white">
-                    View Details
-                  </Link>
-                </div>
+            <div className="card-body">
+              <h2 className="card-title">{p.title}</h2>
+              <p className="text-gray-600">{p.location}</p>
+              <p className="font-semibold">BDT {p.price}</p>
+
+              <div className="card-actions justify-end">
+                <a href={`/property/${p.slug}`} className="btn btn-sm btn-outline">
+                  View Details
+                </a>
               </div>
-
             </div>
-          ))}
-        </div>
-      )}
-
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

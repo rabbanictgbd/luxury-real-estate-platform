@@ -1,113 +1,252 @@
-// src/pages/PropertyEntry.jsx
-import { useState, useContext } from "react";
+import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthProvider";
 import { useNavigate } from "react-router-dom";
+import slugify from "slugify";
 import Swal from "sweetalert2";
 
 export default function PropertyEntry() {
-  const { serverApi } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const imageHostKey = import.meta.env.VITE_IMGBB_API_KEY;
 
-  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "",
+    slug: "",
+    price: null,
+    location: "",
+    size: "",
+    bedrooms: "",
+    bathrooms: "",
+    description: "",
+    category: "",
+    image: null,
+  });
 
+  // 🔹 Handle Change (Text Fields)
+  const handleChange = (e) => {
+  const { name, value, type } = e.target;
+
+  // Convert number fields to real numbers
+  const processedValue = type === "number" ? Number(value) : value;
+
+  // Auto-generate slug from title
+  if (name === "title") {
+    const newSlug = slugify(value, { lower: true });
+    setFormData({
+      ...formData,
+      title: value,
+      slug: newSlug,
+    });
+  } else {
+    setFormData({
+      ...formData,
+      [name]: processedValue,
+    });
+  }
+};
+
+
+  // 🔹 Image Handler
+  const handleImageChange = (e) => {
+    setFormData({ ...formData, image: e.target.files[0] });
+  };
+
+  // 🔹 Submit Handler
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
 
-    const title = e.target.title.value;
-    const description = e.target.description.value;
-    const price = parseFloat(e.target.price.value);
-    const category = e.target.category.value;
-    const mediaFiles = e.target.media.files;
+    let imageUrl = "";
 
-    try {
-      // Upload media files to imgbb or your storage
-      const mediaUrls = [];
-      for (let i = 0; i < mediaFiles.length; i++) {
-        const formData = new FormData();
-        formData.append("image", mediaFiles[i]);
-        const res = await fetch(
-          `https://api.imgbb.com/1/upload?key=${import.meta.env.VITE_IMGBB_API_KEY}`,
-          { method: "POST", body: formData }
-        );
-        const data = await res.json();
-        if (!data.success) throw new Error("Media upload failed");
-        mediaUrls.push(data.data.url);
-      }
+    // Upload to ImageBB
+    if (formData.image) {
+      const imgData = new FormData();
+      imgData.append("image", formData.image);
 
-      // Send property data to backend
-      const res = await fetch(`${serverApi}/api/properties`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title,
-          description,
-          price,
-          category,
-          media: mediaUrls,
-        }),
+      const res = await fetch(
+        `https://api.imgbb.com/1/upload?key=${imageHostKey}`,
+        {
+          method: "POST",
+          body: imgData,
+        }
+      );
+
+      const imageResponse = await res.json();
+      imageUrl = imageResponse.data.url;
+    }
+
+    const propertyData = {
+      ...formData,
+      image: imageUrl,
+      email: user?.email,
+    };
+
+    // Save to backend
+    fetch("http://localhost:5000/api/properties", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(propertyData),
+    }).then(() => {
+      Swal.fire({
+        title: "Success!",
+        text: "Property added successfully.",
+        icon: "success",
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Property creation failed");
-
-      Swal.fire("Success", "Property added successfully!", "success");
-      navigate("/properties"); // Redirect to property list
-    } catch (err) {
-      Swal.fire("Error", err.message, "error");
-    } finally {
-      setLoading(false);
-    }
+      navigate("/properties");
+    });
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-base-100 shadow-lg rounded-lg">
-      <h2 className="text-2xl font-bold text-center mb-6 text-primary">
-        Add New Property
-      </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          name="title"
-          type="text"
-          placeholder="Property Title"
-          className="input input-bordered w-full"
-          required
-        />
-        <textarea
-          name="description"
-          placeholder="Description"
-          className="textarea textarea-bordered w-full"
-          required
-        ></textarea>
-        <input
-          name="price"
-          type="number"
-          placeholder="Price"
-          className="input input-bordered w-full"
-          required
-        />
-        <input
-          name="category"
-          type="text"
-          placeholder="Category"
-          className="input input-bordered w-full"
-          required
-        />
-        <input
-          name="media"
-          type="file"
-          multiple
-          accept="image/*"
-          className="file-input file-input-bordered w-full"
-          required
-        />
-        <button
-          type="submit"
-          className={`btn btn-primary w-full text-white ${loading ? "loading" : ""}`}
-        >
-          Add Property
-        </button>
-      </form>
+<div className="p-10 max-w-4xl mx-auto bg-white shadow-xl rounded-xl">
+  <h1 className="text-3xl font-bold mb-6 text-center">Add New Property</h1>
+
+  <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6">
+
+    {/* Title */}
+    <div className="flex flex-col">
+      <label className="font-medium mb-1">Property Title</label>
+      <input
+        type="text"
+        name="title"
+        placeholder="Enter property title"
+        className="input input-bordered w-full"
+        value={formData.title}
+        onChange={handleChange}
+        required
+      />
     </div>
+
+    {/* Slug (Auto) */}
+    <div className="flex flex-col">
+      <label className="font-medium mb-1">Slug (Auto)</label>
+      <input
+        type="text"
+        name="slug"
+        placeholder="auto-generated-slug"
+        className="input input-bordered bg-gray-100 w-full"
+        value={formData.slug}
+        disabled
+      />
+    </div>
+
+    {/* Category */}
+    <div className="flex flex-col">
+      <label className="font-medium mb-1">Category</label>
+      <select
+        name="category"
+        className="select select-bordered w-full"
+        value={formData.category}
+        onChange={handleChange}
+        required
+      >
+        <option value="">Select Category</option>
+        <option value="Luxury Villa">Luxury Villa</option>
+        <option value="Apartment">Apartment</option>
+        <option value="Commercial">Commercial</option>
+        <option value="Penthouse">Penthouse</option>
+      </select>
+    </div>
+
+    {/* Price */}
+    <div className="flex flex-col">
+      <label className="font-medium mb-1">Price (BDT)</label>
+      <input
+        type="number"
+        name="price"
+        placeholder="Enter price"
+        className="input input-bordered w-full"
+        value={formData.price}
+        onChange={handleChange}
+        required
+      />
+    </div>
+
+    {/* Location */}
+    <div className="flex flex-col">
+      <label className="font-medium mb-1">Location</label>
+      <input
+        type="text"
+        name="location"
+        placeholder="Property location"
+        className="input input-bordered w-full"
+        value={formData.location}
+        onChange={handleChange}
+        required
+      />
+    </div>
+
+    {/* Size */}
+    <div className="flex flex-col">
+      <label className="font-medium mb-1">Size (sqft)</label>
+      <input
+        type="text"
+        name="size"
+        placeholder="e.g. 2500 sqft"
+        className="input input-bordered w-full"
+        value={formData.size}
+        onChange={handleChange}
+        required
+      />
+    </div>
+
+    {/* Bedrooms */}
+    <div className="flex flex-col">
+      <label className="font-medium mb-1">Bedrooms</label>
+      <input
+        type="number"
+        name="bedrooms"
+        placeholder="e.g. 3"
+        className="input input-bordered w-full"
+        value={formData.bedrooms}
+        onChange={handleChange}
+      />
+    </div>
+
+    {/* Bathrooms */}
+    <div className="flex flex-col">
+      <label className="font-medium mb-1">Bathrooms</label>
+      <input
+        type="number"
+        name="bathrooms"
+        placeholder="e.g. 2"
+        className="input input-bordered w-full"
+        value={formData.bathrooms}
+        onChange={handleChange}
+      />
+    </div>
+
+    {/* Description */}
+    <div className="flex flex-col">
+      <label className="font-medium mb-1">Description</label>
+      <textarea
+        name="description"
+        placeholder="Write a detailed property description..."
+        className="textarea textarea-bordered w-full"
+        rows={4}
+        value={formData.description}
+        onChange={handleChange}
+        required
+      />
+    </div>
+
+    {/* Image Upload */}
+    <div className="flex flex-col">
+      <label className="font-medium mb-1">Upload Property Image</label>
+      <input
+        type="file"
+        name="image"
+        className="file-input file-input-bordered w-full"
+        onChange={handleImageChange}
+        required
+      />
+    </div>
+
+    {/* Submit Button */}
+    <button className="btn btn-primary mt-3 w-full">
+      Save Property
+    </button>
+  </form>
+</div>
+
   );
 }

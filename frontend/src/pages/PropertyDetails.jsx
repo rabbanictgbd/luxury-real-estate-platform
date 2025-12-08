@@ -1,58 +1,45 @@
-// src/pages/PropertyDetails.jsx
-import { useEffect, useState, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthProvider";
-import Swal from "sweetalert2";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function PropertyDetails() {
-  const { serverApi, user } = useContext(AuthContext);
-  const { id } = useParams();
-  const navigate = useNavigate();
-
+  const { slug } = useParams();
   const [property, setProperty] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProperty = async () => {
-      try {
-        const res = await fetch(`${serverApi}/api/properties/${id}`);
-        if (!res.ok) throw new Error("Property not found");
-        const data = await res.json();
-        setProperty(data);
-      } catch (err) {
-        Swal.fire("Error", err.message, "error");
-        navigate("/properties");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProperty();
-  }, [id, serverApi, navigate]);
+    fetch(`http://localhost:5000/api/properties/${slug}`)
+      .then((res) => res.json())
+      .then((data) => setProperty(data));
+  }, [slug]);
 
-  const handleBookNow = () => {
-    if (!user) {
-      Swal.fire("Login required", "You must login to book a property", "info");
-      return;
-    }
-    navigate(`/properties/${id}/book`);
-  };
-
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
-  if (!property) return null;
+  if (!property) return <div className="p-6">Loading...</div>;
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-base-100 shadow-lg rounded-lg mt-6">
-      <h1 className="text-3xl font-bold mb-4">{property.title}</h1>
-      <p className="text-gray-600 mb-2">Category: {property.category}</p>
-      <p className="text-xl font-semibold mb-2">Price: ${property.price}</p>
-      <p className="mb-4">{property.description}</p>
+    <div className="p-10 max-w-4xl mx-auto">
+      <img 
+        src={property.image} 
+        alt={property.title} 
+        className="rounded-xl shadow-lg mb-6 w-full h-80 object-cover" 
+      />
 
-      <button
-        onClick={handleBookNow}
-        className="btn btn-primary w-full text-white"
-      >
-        Book Now
-      </button>
+      <h1 className="text-4xl font-bold mb-4">{property.title}</h1>
+      <p className="text-gray-600 mb-4">{property.location}</p>
+      <p className="text-xl font-semibold text-primary mb-4">
+        BDT {property.price}
+      </p>
+
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <p><strong>Category:</strong> {property.category}</p>
+        <p><strong>Size:</strong> {property.size}</p>
+        <p><strong>Bedrooms:</strong> {property.bedrooms}</p>
+        <p><strong>Bathrooms:</strong> {property.bathrooms}</p>
+      </div>
+
+      <p className="mb-6 leading-relaxed">{property.description}</p>
+
+      <Link to={`/book/${property.slug}`} className="btn btn-primary w-full">
+        Book a Visit
+      </Link>
     </div>
   );
 }
