@@ -174,6 +174,43 @@ app.delete("/api/:collection/:id", async (req, res) => {
   }
 });
 
+
+app.get("/api/properties/search", async (req, res) => {
+  try {
+    const { title, location, category, maxPrice } = req.query;
+
+    let filter = {};
+
+    if (title && title.trim() !== "") {
+      filter.title = { $regex: title, $options: "i" };
+    }
+
+    if (location && location.trim() !== "") {
+      filter.location = { $regex: location, $options: "i" };
+    }
+
+    if (category && category.trim() !== "") {
+      filter.category = category;
+    }
+
+    if (maxPrice && !isNaN(maxPrice)) {
+      filter.price = { $lte: Number(maxPrice) };
+    }
+
+    const properties = await propertiesCollection.find(filter).toArray();
+
+    res.json(properties);
+  } catch (err) {
+    console.log("SEARCH ERROR:", err);
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+
+
+
+
+
 // ======================================================
 //      DEFAULT ROUTE
 // ======================================================

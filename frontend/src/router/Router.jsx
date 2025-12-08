@@ -10,11 +10,12 @@ import MainLayout from '../layouts/MainLayout'
 import PrivateRoutes from './PrivateRoutes'
 import AllUsers from '../pages/AllUsers'
 
-import PropertyPage from '../pages/PropertyPage'
+import PropertyPage from '../pages/PropertySearch'
 import PropertyEntry from '../pages/PropertyEntry'
 import PropertyDetails from '../pages/PropertyDetails'
 import PropertyBooking from '../pages/PropertyBooking'
 import MyBookings from '../pages/MyBookings'
+import PropertySearch from '../pages/PropertySearch'
 
 const Router = () => {
     return (
@@ -23,7 +24,7 @@ const Router = () => {
                 <Route element={<MainLayout />} >
                     <Route path="/" element={<Home />} />
                     <Route path="/property-entry" element={<PropertyEntry />} />
-                    <Route path="/properties" element={<PropertyPage />} />
+                    <Route path="/properties" element={<PropertySearch />} />
                     <Route path="/properties/:id" element={<PropertyDetails />} />
                     <Route path="/properties/:id/book" element={<PropertyBooking />} />
                     <Route path="/my-bookings" element={<MyBookings />} />
